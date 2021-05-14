@@ -732,76 +732,63 @@ ggplot(data = b1_ou, aes(x = ou_exp)) +
 #### 4장(다중회귀분석) ----------------------
 
 #[응급]
-model_er <- b1_er %>% select(-PIDWON, -연령대, -만성질환개수_범주)
+lm_er <- b1_er %>% select(-PIDWON, -연령대, -만성질환개수_범주)
 
 #[입원]
-model_in <- b1_in %>% select(-PIDWON, -연령대, -만성질환개수_범주)
+lm_in <- b1_in %>% select(-PIDWON, -연령대, -만성질환개수_범주)
 
 #[외래]
-model_ou <- b1_ou %>% select(-PIDWON, -연령대, -만성질환개수_범주)
+lm_ou <- b1_ou %>% select(-PIDWON, -연령대, -만성질환개수_범주)
 
 #### 4장-(1) 더미변수 생성(대상: 세대구성) ---------------
 
 # 1. 응급(b1_er)
 
 ## 1) 세대구성(참조항목:'기타')
-model_er$더미_단독 = ifelse(model_er$세대구성 == 1, 1, 0)
-model_er$더미_부부 = ifelse(model_er$세대구성 == 2, 1, 0)
-model_er$더미_부부자녀 = ifelse(model_er$세대구성 == 3, 1, 0)
+lm_er$더미_단독 = ifelse(lm_er$세대구성 == 1, 1, 0)
+lm_er$더미_부부 = ifelse(lm_er$세대구성 == 2, 1, 0)
+lm_er$더미_부부자녀 = ifelse(lm_er$세대구성 == 3, 1, 0)
 
-model_er <- model_er %>% select(-세대구성)
+lm_er <- lm_er %>% select(-세대구성)
 
 # 2. 입원(b1_in)
 
 ## 1) 세대구성(참조항목:'기타')
-model_in$더미_단독 = ifelse(model_in$세대구성 == 1, 1, 0)
-model_in$더미_부부 = ifelse(model_in$세대구성 == 2, 1, 0)
-model_in$더미_부부자녀 = ifelse(model_in$세대구성 == 3, 1, 0)
+lm_in$더미_단독 = ifelse(lm_in$세대구성 == 1, 1, 0)
+lm_in$더미_부부 = ifelse(lm_in$세대구성 == 2, 1, 0)
+lm_in$더미_부부자녀 = ifelse(lm_in$세대구성 == 3, 1, 0)
 
-model_in <- model_in %>% select(-세대구성)
+lm_in <- lm_in %>% select(-세대구성)
 
 # 3. 외래(b1_ou)
 
 ## 1) 세대구성(참조항목:'기타')
-model_ou$더미_단독 = ifelse(model_ou$세대구성 == 1, 1, 0)
-model_ou$더미_부부 = ifelse(model_ou$세대구성 == 2, 1, 0)
-model_ou$더미_부부자녀 = ifelse(model_ou$세대구성 == 3, 1, 0)
+lm_ou$더미_단독 = ifelse(lm_ou$세대구성 == 1, 1, 0)
+lm_ou$더미_부부 = ifelse(lm_ou$세대구성 == 2, 1, 0)
+lm_ou$더미_부부자녀 = ifelse(lm_ou$세대구성 == 3, 1, 0)
 
-model_ou <- model_ou %>% select(-세대구성)
+lm_ou <- lm_ou %>% select(-세대구성)
 
 #### 4장-(2)(회귀분석 실시) --------------------------
 
-summary(step(lm(er_exp ~., data=model_er)))
-summary(step(lm(in_exp ~., data=model_in)))
-summary(step(lm(ou_exp ~., data=model_ou)))
-# par(mfrow = c(2, 2))
-# plot(model1)
-# plot(model2)
-# plot(model3)
-# shapiro.test(model1$residuals)
-# shapiro.test(model2$residuals)
-# shapiro.test(model3$residuals)
-
 #### 4장-(2)-1)(응급 데이터 회귀분석 실시) ----------------------
 
-model_er_human <- step(lm(er_exp ~ 성별 + 나이 + 의료보장형태 + 경제활동여부 + 주택소유여부 + 
-                            더미_단독 + 더미_부부 + 더미_부부자녀, data = model_er)) # 단계적 회귀분석 사용
-summary(model_er_human)
-durbinWatsonTest(model_er_human) # 잔차의 독립성 검정
-lm.beta(model_er_human) # 표준화계수 산출
+model_er <- step(lm(er_exp ~., data=lm_er))
+summary(model_er)
+durbinWatsonTest(model_er) # 잔차의 독립성 검정
+lm.beta(model_er) # 표준화계수 산출
 
 ## 1) 팽창계수 확인
-vif(model_er_human)  # 다중공선성 없음
+vif(model_er)  # 다중공선성 없음
 
 ## 2) 상관계수 확인
 ### (1) 상관행렬 생성
-cor_er_human <- cor(model_er[c('성별', '나이', '의료보장형태', '경제활동여부', 
-                               '주택소유여부', '더미_단독', '더미_부부', '더미_부부자녀')])
+cor_er <- cor(lm_er)
 
 ### (2) 상관행렬 히트맵 생성
 ### colorRampPalette() 함수를 사용하여 색상 코드 목록 생성
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
-corrplot(cor_er_human,
+corrplot(cor_er,
          method = "color", # 색깔로 표현
          col = col(200), # 색상 200개 설정
          type = "lower", # 왼쪽 아래 행렬만 표시
@@ -810,73 +797,37 @@ corrplot(cor_er_human,
          tl.srt = 45, # 변수명 45도 기울임
          diag = F) # 대각 행렬 제외
 
-## 3) 회귀분석 가정 확인
-## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_er_human)
-shapiro.test(model_er_human$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-par(mfrow = c(1, 1)) # 재분배
-
-influencePlot(model_er_human, id.method="identity")
-
-qqPlot(model_er_human,id.method="identify",simulate=TRUE,main="Q-Q_ plot")
-model_er['140',]
-fitted(model_er_human)["140"]
-coef(model_er_human)
-crPlots(model_er_human)
-
-#------------------------------------------------#
-
-# 2. 건강상태 및 건강행위에 따른 변수
-model_er_health<- step(lm(er_exp ~ 흡연여부 + 음주여부 + 장애여부 + 
-                            신체활동제한 + 우울경험 + 만성질환개수, data = model_er)) # 단계적 회귀분석 사용
-summary(model_er_health)
-durbinWatsonTest(model_er_health) # 잔차의 독립성 검정
-lm.beta(model_er_health) # 표준화계수 산출
-
-## 1) 팽창계수 확인
-vif(model_er_health)  # 다중공선성 없음
-
-## 2) 상관계수 확인
-### (1) 상관행렬 생성
-cor_er_health <- cor(model_er[c('흡연여부', '음주여부', '장애여부', '신체활동제한', '우울경험', '만성질환개수')])
-
-### (2) 상관행렬 히트맵 생성
-corrplot(cor_er_health,
-         method = "color", # 색깔로 표현
-         col = col(200), # 색상 200개 설정
-         type = "lower", # 왼쪽 아래 행렬만 표시
-         addCoef.col = "black", # 상관계수 색깔
-         tl.col = "black", # 변수명 색깔
-         tl.srt = 45, # 변수명 45도 기울임
-         diag = F) # 대각 행렬 제외
-
-## 3) 회귀분석 가정 확인
-## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_er_health)
-shapiro.test(model_er_health$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-par(mfrow = c(1, 1)) # 재분배
+# ## 3) 회귀분석 가정 확인
+# ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
+# par(mfrow = c(2, 2))
+# plot(model_er)
+# shapiro.test(model_er$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
+# par(mfrow = c(1, 1)) # 재분배
+# 
+# influencePlot(model_er, id.method="identity")
+# 
+# qqPlot(model_er,id.method="identify",simulate=TRUE,main="Q-Q_ plot")
+# model_er['140',]
+# fitted(model_er)["140"]
+# coef(model_er)
+# crPlots(model_er)
 
 #### 4장-(2)-2)(입원 데이터 회귀분석 실시) ----------------------
 
-# 1. 인구/경제학적 변수
-model_in_human <- step(lm(in_exp ~ 성별 + 나이 + 의료보장형태 + 경제활동여부 + 주택소유여부 + 
-                            더미_단독 + 더미_부부 + 더미_부부자녀, data = model_in)) # 단계적 회귀분석 사용
-summary(model_in_human)
-durbinWatsonTest(model_in_human) # 잔차의 독립성 검정
-lm.beta(model_in_human) # 표준화계수 산출
+model_in <- step(lm(in_exp ~., data=lm_in))
+summary(model_in)
+durbinWatsonTest(model_in) # 잔차의 독립성 검정
+lm.beta(model_in) # 표준화계수 산출
 
 ## 1) 팽창계수 확인
-vif(model_in_human)  # 다중공선성 없음
+vif(model_in)  # 다중공선성 없음
 
 ## 2) 상관계수 확인
 ### (1) 상관행렬 생성
-cor_in_human <- cor(model_in[c('성별', '나이', '의료보장형태', '경제활동여부', 
-                               '주택소유여부', '더미_단독', '더미_부부', '더미_부부자녀')])
+cor_in <- cor(lm_in)
 
 ### (2) 상관행렬 히트맵 생성
-corrplot(cor_in_human,
+corrplot(cor_in,
          method = "color", # 색깔로 표현
          col = col(200), # 색상 200개 설정
          type = "lower", # 왼쪽 아래 행렬만 표시
@@ -885,69 +836,29 @@ corrplot(cor_in_human,
          tl.srt = 45, # 변수명 45도 기울임
          diag = F) # 대각 행렬 제외
 
-## 3) 회귀분석 가정 확인
-## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_in_human)
-shapiro.test(model_in_human$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-par(mfrow = c(1, 1)) # 재분배
-
-influencePlot(model_in_human, id.method="identity")
-
-#------------------------------------------------#
-
-# 2. 건강상태 및 건강행위에 따른 변수
-model_in_health<- step(lm(in_exp ~ 흡연여부 + 음주여부 + 장애여부 + 
-                            신체활동제한 + 우울경험 + 만성질환개수, data = model_in)) # 단계적 회귀분석 사용
-summary(model_in_health)
-durbinWatsonTest(model_in_health) # 잔차의 독립성 검정
-lm.beta(model_in_health) # 표준화계수 산출
-
-## 1) 팽창계수 확인
-vif(model_in_health)  # 다중공선성 없음
-
-## 2) 상관계수 확인
-### (1) 상관행렬 생성
-cor_in_health <- cor(model_in[c('흡연여부', '음주여부', '장애여부', '신체활동제한', '우울경험', '만성질환개수')])
-
-### (2) 상관행렬 히트맵 생성
-corrplot(cor_in_health,
-         method = "color", # 색깔로 표현
-         col = col(200), # 색상 200개 설정
-         type = "lower", # 왼쪽 아래 행렬만 표시
-         addCoef.col = "black", # 상관계수 색깔
-         tl.col = "black", # 변수명 색깔
-         tl.srt = 45, # 변수명 45도 기울임
-         diag = F) # 대각 행렬 제외
-
-## 3) 회귀분석 가정 확인
-## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_in_health)
-shapiro.test(model_in_health$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-par(mfrow = c(1, 1)) # 재분배
-
-influencePlot(model_in_health, id.method="identity")
+# ## 3) 회귀분석 가정 확인
+# ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
+# par(mfrow = c(2, 2))
+# plot(model_in)
+# shapiro.test(model_in$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
+# par(mfrow = c(1, 1)) # 재분배
 
 #### 4장-(2)-3)(외래 데이터 회귀분석 실시) ----------------------
 
-# 1. 인구/경제학적 변수
-model_ou_human <- step(lm(ou_exp ~ 성별 + 나이 + 의료보장형태 + 경제활동여부 + 주택소유여부 + 
-                            더미_단독 + 더미_부부 + 더미_부부자녀, data = model_ou)) # 단계적 회귀분석 사용
-summary(model_ou_human)
-durbinWatsonTest(model_ou_human) # 잔차의 독립성 검정
-lm.beta(model_ou_human) # 표준화계수 산출
+model_ou <- step(lm(ou_exp ~., data=lm_ou)) # 단계적 회귀분석 사용
+summary(model_ou)
+durbinWatsonTest(model_ou) # 잔차의 독립성 검정
+lm.beta(model_ou) # 표준화계수 산출
 
 ## 1) 팽창계수 확인
-vif(model_ou_human)  # 다중공선성 없음
+vif(model_ou)  # 다중공선성 없음
 
 ## 2) 상관계수 확인
 ### (1) 상관행렬 생성
-cor_ou_human <- cor(model_ou[c('성별', '나이', '의료보장형태', '경제활동여부', 
-                               '주택소유여부', '더미_단독', '더미_부부', '더미_부부자녀')])
+cor_ou <- cor(lm_ou)
 
 ### (2) 상관행렬 히트맵 생성
-corrplot(cor_ou_human,
+corrplot(cor_ou,
          method = "color", # 색깔로 표현
          col = col(200), # 색상 200개 설정
          type = "lower", # 왼쪽 아래 행렬만 표시
@@ -956,46 +867,9 @@ corrplot(cor_ou_human,
          tl.srt = 45, # 변수명 45도 기울임
          diag = F) # 대각 행렬 제외
 
-## 3) 회귀분석 가정 확인
-## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_ou_human)
-shapiro.test(model_ou_human$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-par(mfrow = c(1, 1)) # 재분배
-
-influencePlot(model_ou_human, id.method="identity")
-
-#------------------------------------------------#
-
-# 2. 건강상태 및 건강행위에 따른 변수
-model_ou_health<- step(lm(ou_exp ~ 흡연여부 + 음주여부 + 장애여부 + 
-                            신체활동제한 + 우울경험 + 만성질환개수, data = model_ou)) # 단계적 회귀분석 사용
-summary(model_ou_health)
-durbinWatsonTest(model_ou_health) # 잔차의 독립성 검정
-lm.beta(model_ou_health) # 표준화계수 산출
-
-## 1) 팽창계수 확인
-vif(model_ou_health)  # 다중공선성 없음
-
-## 2) 상관계수 확인
-### (1) 상관행렬 생성
-cor_ou_health <- cor(model_ou[c('흡연여부', '음주여부', '장애여부', '신체활동제한', '우울경험', '만성질환개수')])
-
-### (2) 상관행렬 히트맵 생성
-corrplot(cor_ou_health,
-         method = "color", # 색깔로 표현
-         col = col(200), # 색상 200개 설정
-         type = "lower", # 왼쪽 아래 행렬만 표시
-         addCoef.col = "black", # 상관계수 색깔
-         tl.col = "black", # 변수명 색깔
-         tl.srt = 45, # 변수명 45도 기울임
-         diag = F) # 대각 행렬 제외
-
-## 3) 회귀분석 가정 확인
-## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_ou_health)
-shapiro.test(model_ou_health$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-par(mfrow = c(1, 1)) # 재분배
-
-influencePlot(model_ou_health, id.method="identity")
+# ## 3) 회귀분석 가정 확인
+# ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
+# par(mfrow = c(2, 2))
+# plot(model_ou)
+# shapiro.test(model_ou$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
+# par(mfrow = c(1, 1)) # 재분배
