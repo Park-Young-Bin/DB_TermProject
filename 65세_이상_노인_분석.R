@@ -127,7 +127,7 @@ ggplot(data = ind_ou_65_pct, aes(x = OUCOUNT, y = pct)) +
                                   size =15,
                                   hjust=0.5))
 
-#### 3장(노인의 여러 요인에 따른 의료비 지출 현황_빈도/%) ---------------------------
+#### 3장(노인의 여러 요인에 따른 의료비 지출 현황) ---------------------------
 
 #### 3장-(1)(데이터 결합_merge) ------------------------------------------
 
@@ -152,7 +152,7 @@ dt <- rename(raw_data,
              만성질환개수 = count,
              흡연여부 = S2,
              음주여부 = S22,
-             장애여부 = C13_1,
+             장애여부 = C14,
              신체활동제한 = SH117,
              우울경험 = S44)
 
@@ -196,7 +196,7 @@ b1$흡연여부 <- ifelse(b1$흡연여부 %in% c(3, 4, -9), 0, 1)
 b1$음주여부 <- ifelse(b1$음주여부 %in% c(1, 2, -1), 0 ,1)
 
 ##(9) 장애여부 변수 전처리(1: 장애있음, 0: 장애없음)
-b1$장애여부 <- ifelse(b1$장애여부 == 2, 0, 1)
+b1$장애여부 <- ifelse(b1$장애여부 == -1, 0, 1) # -1: 해당사항없음(비장애인)
 
 ##(10) 신체활동제한 변수 전처리(1: 제한있음, 0: 제한없음)
 b1$신체활동제한 <- ifelse(b1$신체활동제한 == 1, 1, 0)
@@ -783,7 +783,7 @@ vif(model_er)  # 다중공선성 없음
 
 ## 2) 상관계수 확인
 ### (1) 상관행렬 생성
-cor_er <- cor(lm_er)
+cor_er <- cor(lm_er %>% select(-er_exp))
 
 ### (2) 상관행렬 히트맵 생성
 ### colorRampPalette() 함수를 사용하여 색상 코드 목록 생성
@@ -799,8 +799,8 @@ corrplot(cor_er,
 
 # ## 3) 회귀분석 가정 확인
 # ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-# par(mfrow = c(2, 2))
-# plot(model_er)
+par(mfrow = c(2, 2))
+plot(model_er)
 # shapiro.test(model_er$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
 # par(mfrow = c(1, 1)) # 재분배
 # 
@@ -824,7 +824,7 @@ vif(model_in)  # 다중공선성 없음
 
 ## 2) 상관계수 확인
 ### (1) 상관행렬 생성
-cor_in <- cor(lm_in)
+cor_in <- cor(lm_in %>% select(-in_exp))
 
 ### (2) 상관행렬 히트맵 생성
 corrplot(cor_in,
@@ -838,8 +838,8 @@ corrplot(cor_in,
 
 # ## 3) 회귀분석 가정 확인
 # ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-# par(mfrow = c(2, 2))
-# plot(model_in)
+par(mfrow = c(2, 2))
+plot(model_in)
 # shapiro.test(model_in$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
 # par(mfrow = c(1, 1)) # 재분배
 
@@ -855,7 +855,7 @@ vif(model_ou)  # 다중공선성 없음
 
 ## 2) 상관계수 확인
 ### (1) 상관행렬 생성
-cor_ou <- cor(lm_ou)
+cor_ou <- cor(lm_ou %>% select(-ou_exp))
 
 ### (2) 상관행렬 히트맵 생성
 corrplot(cor_ou,
@@ -869,7 +869,7 @@ corrplot(cor_ou,
 
 # ## 3) 회귀분석 가정 확인
 # ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-# par(mfrow = c(2, 2))
-# plot(model_ou)
+par(mfrow = c(2, 2))
+plot(model_ou)
 # shapiro.test(model_ou$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
 # par(mfrow = c(1, 1)) # 재분배
