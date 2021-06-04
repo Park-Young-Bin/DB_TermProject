@@ -94,7 +94,7 @@ ind_ou_65_pct <- ind_ou_65 %>%
   select(OUCOUNT, pct)
 
 # 2.3 그래프 작성
-## 65세 이상 노인의 응급 의료이용 그래프(비율과 빈도)
+## 65세 이상 노인의 응급 의료이용 그래프(비율)
 ggplot(data = ind_er_65_pct, aes(x = ERCOUNT, y = pct)) +
   geom_col() +
   theme_classic() + 
@@ -105,7 +105,7 @@ ggplot(data = ind_er_65_pct, aes(x = ERCOUNT, y = pct)) +
                                   size =15,
                                   hjust=0.5))
   
-## 65세 이상 노인의 입원 의료이용 그래프(비율과 빈도)
+## 65세 이상 노인의 입원 의료이용 그래프(비율)
 ggplot(data = ind_In_65_pct, aes(x = INCOUNT, y = pct)) +
   geom_col() +
   theme_classic() + 
@@ -116,7 +116,7 @@ ggplot(data = ind_In_65_pct, aes(x = INCOUNT, y = pct)) +
                                   size =15,
                                   hjust=0.5))
 
-## 65세 이상 노인의 외래 외래이용 그래프(빈도와 비율)
+## 65세 이상 노인의 외래 외래이용 그래프(비율)
 ggplot(data = ind_ou_65_pct, aes(x = OUCOUNT, y = pct)) +
   geom_col() +
   theme_classic() + 
@@ -190,10 +190,16 @@ b1$만성질환개수_범주 <- ifelse(b1$만성질환개수 == 0, '0개',
                                           ifelse(b1$만성질환개수 == 4, '4개', '5개 이상')))))
 
 ##(7) 흡연여부 변수 전처리(1: 흡연, 0: 흡연안함)
-b1$흡연여부 <- ifelse(b1$흡연여부 %in% c(3, 4, -9), 0, 1)
+b1$흡연여부 <- ifelse(b1$흡연여부 %in% c(3, 4), 0, 
+                  ifelse(b1$흡연여부 %in% c(1, 2), 1, NA))
+table(b1$흡연여부)
+table(is.na(b1$흡연여부)) # NA: 3개
 
 ##(8) 음주여부 변수 전처리(1: 월 1회 이상, 0: 월 1회 미만)
-b1$음주여부 <- ifelse(b1$음주여부 %in% c(1, 2, -1), 0 ,1)
+b1$음주여부 <- ifelse(b1$음주여부 %in% c(1, 2, -1), 0,
+                  ifelse(b1$음주여부 == -9, NA, 1))
+table(b1$음주여부)
+table(is.na(b1$음주여부)) # NA: 4개
 
 ##(9) 장애여부 변수 전처리(1: 장애있음, 0: 장애없음)
 b1$장애여부 <- ifelse(b1$장애여부 == -1, 0, 1) # -1: 해당사항없음(비장애인)
@@ -202,8 +208,10 @@ b1$장애여부 <- ifelse(b1$장애여부 == -1, 0, 1) # -1: 해당사항없음(
 b1$신체활동제한 <- ifelse(b1$신체활동제한 == 1, 1, 0)
 
 ##(11) 우울경험 변수 전처리(1: 우울감 경험, 0: 우울감 경험 안함)
-b1$우울경험 <- ifelse(b1$우울경험 %in% 1, 1, 0)
-
+b1$우울경험 <- ifelse(b1$우울경험 %in% c(-1, 2), 0, 
+                  ifelse(b1$우울경험 == -9, NA, 1))
+table(b1$우울경험)
+table(is.na(b1$우울경험)) # NA: 3개
 
 #### 3장-(3)(응급/입원/외래 진료비 파악) ----------------------
 
@@ -478,6 +486,10 @@ ggplot(data = b1_er, aes(x = er_exp)) +
 #### 3장-(4)-2)(65세 이상 입원 의료이용자 현황) ----------------------
 
 b1_in <- merge(b1, dt_in, by = c("PIDWON")) %>% filter(연령대 == '65세 이상'& !is.na(의료보장형태))
+table(is.na(b1_in$흡연여부)) # NA: 1개
+table(is.na(b1_in$음주여부)) # NA: 1개
+table(is.na(b1_in$우울경험)) # NA: 1개
+b1_in <- b1_in %>% filter(PIDWON != 2059601) # 결측치 원인 제거
 
 ## 1) 성별에 따른 입원이용 현황과 개인지출의료비
 b1_in %>% 
