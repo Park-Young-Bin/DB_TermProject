@@ -809,21 +809,6 @@ corrplot(cor_er,
          tl.srt = 45, # 변수명 45도 기울임
          diag = F) # 대각 행렬 제외
 
-# ## 3) 회귀분석 가정 확인
-# ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_er)
-# shapiro.test(model_er$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-# par(mfrow = c(1, 1)) # 재분배
-# 
-# influencePlot(model_er, id.method="identity")
-# 
-# qqPlot(model_er,id.method="identify",simulate=TRUE,main="Q-Q_ plot")
-# model_er['140',]
-# fitted(model_er)["140"]
-# coef(model_er)
-# crPlots(model_er)
-
 #### 4장-(2)-2)(입원 데이터 회귀분석 실시) ----------------------
 
 model_in <- step(lm(in_exp ~., data=lm_in))
@@ -848,13 +833,6 @@ corrplot(cor_in,
          tl.srt = 45, # 변수명 45도 기울임
          diag = F) # 대각 행렬 제외
 
-# ## 3) 회귀분석 가정 확인
-# ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_in)
-# shapiro.test(model_in$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-# par(mfrow = c(1, 1)) # 재분배
-
 #### 4장-(2)-3)(외래 데이터 회귀분석 실시) ----------------------
 
 model_ou <- step(lm(ou_exp ~., data=lm_ou)) # 단계적 회귀분석 사용
@@ -878,10 +856,3 @@ corrplot(cor_ou,
          tl.col = "black", # 변수명 색깔
          tl.srt = 45, # 변수명 45도 기울임
          diag = F) # 대각 행렬 제외
-
-# ## 3) 회귀분석 가정 확인
-# ## 1행1열: 선형성 / 1행2열: 정규성 / 2행1열: 잔차의 등분산성 / 2행2열: 극단값
-par(mfrow = c(2, 2))
-plot(model_ou)
-# shapiro.test(model_ou$residuals) # 샤피로 검정으로 잔차의 정규성 확인(p-value가 높을수록 좋다.)
-# par(mfrow = c(1, 1)) # 재분배
